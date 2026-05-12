@@ -5,11 +5,11 @@ import sys
 
 
 class InventoryError(Exception):
-    def __init__(self, msg="Unknown inventory error."):
+    def __init__(self, msg: str = "Unknown inventory error.") -> None:
         print(msg)
 
 
-def init_inventory(items: list = []) -> dict:
+def init_inventory(items: list[str] = []) -> dict[str, int]:
     inventory = {}
     for item in items:
         try:
@@ -32,7 +32,7 @@ def init_inventory(items: list = []) -> dict:
     return inventory
 
 
-def add_item(inventory: dict = {}, new_item: dict = {}):
+def add_item(inventory: dict[str, int], new_item: dict[str, int]) -> None:
     if new_item != {}:
         try:
             item = list(new_item.keys())[0]

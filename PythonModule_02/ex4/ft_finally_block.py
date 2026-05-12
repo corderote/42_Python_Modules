@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 
 class GardenError(Exception):
-    def __init__(self, msg="Unknown garden error.", *args, **kwargs):
-        super().__init__(msg, *args, **kwargs)
+    def __init__(self, msg: str = "Unknown garden error.") -> None:
+        super().__init__(msg)
 
 
 class PlantError(GardenError):
-    def __init__(self, msg="Unknown plant error.", *args, **kwargs):
-        super().__init__(msg, *args, **kwargs)
+    def __init__(self, msg: str = "Unknown plant error.") -> None:
+        super().__init__(msg)
 
 
 def water_plant(plant_name: str) -> None:
@@ -17,7 +17,7 @@ def water_plant(plant_name: str) -> None:
         raise PlantError(f" Invalid plant name to water: '{plant_name}'")
 
 
-def test_watering_system(plant_list: list = []) -> None:
+def test_watering_system(plant_list: list[str] = []) -> None:
     try:
         print("Opening watering system")
         for plant in plant_list:

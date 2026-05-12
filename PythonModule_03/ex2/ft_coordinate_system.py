@@ -3,7 +3,7 @@
 import math
 
 
-def get_player_pos() -> tuple:
+def get_player_pos() -> tuple[float, float, float]:
     valid = False
     while not valid:
         valid = True

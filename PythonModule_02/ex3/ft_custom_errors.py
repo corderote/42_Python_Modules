@@ -1,21 +1,21 @@
 #!/usr/bin/python3
 
 class GardenError(Exception):
-    def __init__(self, msg="Unknown garden error.", *args, **kwargs):
-        super().__init__(msg, *args, **kwargs)
+    def __init__(self, msg: str = "Unknown garden error.") -> None:
+        super().__init__(msg)
 
 
 class PlantError(GardenError):
-    def __init__(self, msg="Unknown plant error.", *args, **kwargs):
-        super().__init__(msg, *args, **kwargs)
+    def __init__(self, msg: str = "Unknown plant error.") -> None:
+        super().__init__(msg)
 
 
 class WaterError(GardenError):
-    def __init__(self, msg="Unknown water error.", *args, **kwargs):
-        super().__init__(msg, *args, **kwargs)
+    def __init__(self, msg: str = "Unknown water error.") -> None:
+        super().__init__(msg)
 
 
-def test_error_types():
+def test_error_types() -> None:
     for op_nbr in range(0, 5, 1):
         try:
             match int(op_nbr):

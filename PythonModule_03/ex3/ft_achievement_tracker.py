@@ -12,10 +12,10 @@ achievements_set = {'Crafting Genius', 'Strategist', 'World Savior',
 players = ["Alice", "Bob", "Charlie", "Dylan"]
 
 
-def gen_player_achievements() -> set:
+def gen_player_achievements() -> set[str]:
     nbr = random.randint(0, len(achievements_set))
     player_achievements = random.sample(list(achievements_set), nbr)
-    return player_achievements
+    return set(player_achievements)
 
 
 if __name__ == "__main__":
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         print(f"Player {players[idx]}: {players_sets[idx]}")
     print()
     print()
-    union_set = set()
+    union_set: set[str] = set()
     for items in players_sets:
         union_set = union_set.union(items)
     print(f"All distinct achievements: {union_set}")

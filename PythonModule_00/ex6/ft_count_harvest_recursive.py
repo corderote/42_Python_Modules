@@ -8,5 +8,3 @@ def ft_count_harvest_recursive() -> None:
     days = int(input("Days until harvest: "))
     recursive_days(days)
     print("Harvest time!")
-
-ft_count_harvest_recursive()
