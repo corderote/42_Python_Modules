@@ -13,8 +13,7 @@ if __name__ == "__main__":
     print()
     all_capitalize_lst = [name.capitalize() for name in names]
     print(f"New list with all names capitalized: {all_capitalize_lst}")
-    only_capitalize = [name.capitalize()
-                       for name in names if name == name.capitalize()]
+    only_capitalize = [name for name in names if name == name.capitalize()]
     print(f"New list of capitalized names only: {only_capitalize}")
     score_dict = {name: random.randint(0, 1000) for name in all_capitalize_lst}
     print(f"Score dict: {score_dict}")
