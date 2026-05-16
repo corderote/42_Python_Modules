@@ -11,6 +11,7 @@ names = ['Alice', 'bob', 'Charlie',
 if __name__ == "__main__":
     print("=== Game Data Alchemist ===")
     print()
+    print(f"Initial list of players: {names}")
     all_capitalize_lst = [name.capitalize() for name in names]
     print(f"New list with all names capitalized: {all_capitalize_lst}")
     only_capitalize = [name for name in names if name == name.capitalize()]

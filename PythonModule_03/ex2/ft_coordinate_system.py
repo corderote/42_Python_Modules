@@ -32,6 +32,7 @@ if __name__ == "__main__":
     distance = math.sqrt(p1[0]**2 + p1[1]**2 + p1[2]**2)
     print(f"Distance to center: {round(distance, 4)}")
     print()
+    print("Get a second set of coordinates")
     p2 = get_player_pos()
     distance = (p2[0] - p1[0])**2 + (p2[1] - p1[1])**2 + (p2[2] - p1[2])**2
     distance = math.sqrt(distance)

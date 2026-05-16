@@ -72,4 +72,7 @@ if __name__ == "__main__":
         add_item(inventory, {"magic_item": 10})
         print(f"Updated inventory: {inventory}")
         print("=== Inventory Analysis Complete ===")
-    pass
+    else:
+        print("No inventory provided. "
+              "Usage: python3 ft_inventory_system.py "
+              "<item_1:qty_1> <item_2:qty_2> ...")
