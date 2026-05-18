@@ -9,6 +9,12 @@ class DataProcessorError(Exception):
     def __init__(self, msg: str = "Unknown DataProcessor error.") -> None:
         print(msg)
 
+
+class DataStreamError(Exception):
+    def __init__(self, msg: str = "Unknown DataStream error.") -> None:
+        print(msg)
+
+
 class DataProcessor(ABC):
     def __init__(self):
         self._data = []
@@ -29,6 +35,7 @@ class DataProcessor(ABC):
             return (self._rank - 1, str(self._data.pop(0)))
         else:
             return (-1, "")
+
 
 class NumericProcessor(DataProcessor):
     def __init__(self):
@@ -52,6 +59,7 @@ class NumericProcessor(DataProcessor):
                 self._data.extend(data)
         else:
             raise DataProcessorError(" Got exception: Improper numeric data")
+
 
 class TextProcessor(DataProcessor):
     def __init__(self):
@@ -114,54 +122,83 @@ class LogProcessor(DataProcessor):
             raise DataProcessorError(" Got exception: Improper log data")
 
 
-def data_test(type: str, output_qty: int = 0):
-    if type == "numeric":
-        dp = NumericProcessor()
-        new_data = [1, 2, 3, 4, 5]
-        output_text = "Numeric value"
-    elif type == "text":
-        dp = TextProcessor()
-        new_data = ['Hello', 'Nexus', 'World']
-        output_text = "Text value"
-    elif type == "log":
-        dp = LogProcessor()
-        new_data =  [{'log_level': 'NOTICE', 
-                      'log_message': 'Connection to server'},
-                     {'log_level': 'ERROR', 
-                      'log_message': 'Unauthorized access!!'}]
-        output_text = "Log entry"
-    else:
-        raise DataProcessorError("Testing Unknown DataProcessor Type")
-    print(f" Trying to validate input '42': {dp.validate(42)}")
-    print(f" Trying to validate input 'Hello': {dp.validate('Hello')}")
-    print(f" Trying to validate input '3.1416': {dp.validate(3.1416)}")
-    print(" Trying to validate input '[1, 2.0, 3, 4.0]': "
-          f"{dp.validate([1, 2.0, 3, 4.0])}")
-    print(" Trying to validate input '['A', 'b', 'C', 'd']': "
-          f"{dp.validate(['A', 'b', 'C', 'd'])}")
+class DataStream():
+    def __init__(self):
+        self.procs = []
+        super().__init__()
 
-    print(" Test invalid ingestion of string 'foo' without prior validation:")
-    try:
-        dp.ingest("foo")
-        print(" Valid ingest() call. Emptying DataProcessor ...")
-        dp.output()
-    except DataProcessorError:
-        pass
-    print(f" Processing Data: {new_data}")
-    if dp.validate(new_data):
-        dp.ingest(new_data)
-    print(f" Extracting {output_qty} values...")
-    for _ in range(output_qty):
-        output = dp.output()
-        print(f" {output_text} {output[0]}: {output[1]}")
-
+    def register_processor(self, proc: DataProcessor) -> None:
+        if isinstance(proc, DataProcessor):
+            self.procs.append(proc)
+        
+    def process_stream(self, stream: list[Any]) -> None:
+        for item in stream:
+            try: 
+                valid = False
+                for proc in self.procs:
+                    if proc.validate(item):
+                        proc.ingest(item)
+                        valid = True
+                if valid == False:
+                    raise DataStreamError("DataStream error - "
+                                          "Can't process element in stream: "
+                                          f"{item}")
+            except DataStreamError:
+                pass
+        
+    def print_processors_stats(self) -> None:
+        print("=== DataStream statistics ===")
+        if len(self.procs) == 0:
+            print("No processor found, no data.")
+        else:
+            for proc in self.procs:
+                print(f"{proc.__class__.__name__}: "
+                      f"total {len(proc._data) + proc._rank} items processed, "
+                      f"remaining {len(proc._data)} on processor.")
+                
+    def consume_elements(self, type: str, qty: int):
+        for proc in self.procs:
+            if type == "n" and isinstance(proc, NumericProcessor):
+                for _ in range(qty):
+                    proc.output()
+            if type == "t" and isinstance(proc, TextProcessor):
+                for _ in range(qty):
+                    proc.output()
+            if type == "l" and isinstance(proc, LogProcessor):
+                for _ in range(qty):
+                    proc.output()
+    
 
 if __name__ == "__main__":
-    print("=== Code Nexus - Data Processor ===")
-    print("\nTesting Numeric Processor...")
-    data_test("numeric", 3)
-    print("\nTesting Text Processor...")
-    data_test("text", 1)
-    print("\nTesting Log Processor...")
-    data_test("log", 2)
+    ds = DataStream()
+    data = [
+            'Hello world', 
+            [3.14, -1, 2.71],
+            [{'log_level': 'WARNING',
+            'log_message': 'Telnet access! Use ssh instead'},
+            {'log_level': 'INFO',
+            'log_message': 'User wil isconnected'}],
+            42,
+            ['Hi', 'five']]
+    
+    print("=== Code Nexus - Data Stream ===")
+    print()
+    ds.print_processors_stats()
+    print("\nRegistering Numeric Processor\n")
+    ds.register_processor(NumericProcessor())
+    print(f"Send first batch of data on stream: {data}")
+    ds.process_stream(data)
+    ds.print_processors_stats()
+    print("\nRegistering other data procesors")
+    ds.register_processor(TextProcessor())
+    ds.register_processor(LogProcessor())
+    print("Send the same batch again")
+    ds.process_stream(data)
+    ds.print_processors_stats()
+    print("\nConsume some elements from the data processors: "
+          "Numeric 3, Text 2, Log 1")
+    ds.consume_elements("n", 3)
+    ds.consume_elements("t", 2)
+    ds.consume_elements("l", 1)
+    ds.print_processors_stats()
     print()
