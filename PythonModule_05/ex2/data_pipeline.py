@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 
-from typing import Any
+from typing import Any, Protocol
 from abc import ABC, abstractmethod
 
 
@@ -13,6 +13,11 @@ class DataProcessorError(Exception):
 class DataStreamError(Exception):
     def __init__(self, msg: str = "Unknown DataStream error.") -> None:
         print(msg)
+
+# TODO
+class ExportPlugin(Protocol):
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        pass
 
 
 class DataProcessor(ABC):
@@ -168,6 +173,10 @@ class DataStream():
                 for _ in range(qty):
                     proc.output()
 
+    # TODO
+    def output_pipeline(self, nb: int, plugin: ExportPlugin) -> None:
+        pass
+
 
 if __name__ == "__main__":
     data = [
@@ -179,26 +188,35 @@ if __name__ == "__main__":
             'log_message': 'User wil isconnected'}],
             42,
             ['Hi', 'five']]
-    print("=== Code Nexus - Data Stream ===")
+    print("=== Code Nexus - Data Pipeline ===")
     print()
-    print("Initialize Data Stream...")
+    print("Initialize Data Stream...\n")
     ds = DataStream()
     ds.print_processors_stats()
-    print("\nRegistering Numeric Processor\n")
+    print("\nRegistering Processors\n")
     ds.register_processor(NumericProcessor())
-    print(f"Send first batch of data on stream: {data}")
-    ds.process_stream(data)
-    ds.print_processors_stats()
-    print("\nRegistering other data procesors")
     ds.register_processor(TextProcessor())
     ds.register_processor(LogProcessor())
-    print("Send the same batch again")
+    print(f"Send first batch of data on stream: {data}\n")
     ds.process_stream(data)
     ds.print_processors_stats()
-    print("\nConsume some elements from the data processors: "
-          "Numeric 3, Text 2, Log 1")
-    ds.consume_elements("n", 3)
-    ds.consume_elements("t", 2)
-    ds.consume_elements("l", 1)
+    
+    # TODO
+    print("Send 3 processed data from each processor to a CSV plugin:")
+    ds.output_pipeline(3, )
+
+    print(f"Send another batch of data on stream: {data}\n")
+    data = [21, ['I love AI', 'LLMs are wonderful', 'Stay healthy'],
+           [{'log_level': 'ERROR', 
+             'log_message': '500 server crash'}, 
+            {'log_level': 'NOTICE',
+             'log_message': 'Certificate expires in 10 days'}],
+           [32, 42, 64, 84, 128, 168], 'World hello']
+    ds.process_stream(data)
     ds.print_processors_stats()
-    print()
+
+    # TODO
+    print("Send 5 processed data from each processor to a JSON plugin:")
+    
+
+    ds.print_processors_stats()
