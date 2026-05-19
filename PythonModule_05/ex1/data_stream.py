@@ -16,8 +16,8 @@ class DataStreamError(Exception):
 
 
 class DataProcessor(ABC):
-    def __init__(self):
-        self._data = []
+    def __init__(self) -> None:
+        self._data: list[Any] = []
         self._rank = 0
         super().__init__()
 
@@ -38,7 +38,7 @@ class DataProcessor(ABC):
 
 
 class NumericProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def validate(self, data: Any) -> bool:
@@ -50,9 +50,9 @@ class NumericProcessor(DataProcessor):
                     return False
             return True
         return False
-    
+
     def ingest(self, data: (int | float | list[(int | float)])) -> None:
-        if self.validate(data) == True:
+        if self.validate(data):
             if isinstance(data, (int, float)):
                 self._data.append(data)
             elif isinstance(data, list):
@@ -62,7 +62,7 @@ class NumericProcessor(DataProcessor):
 
 
 class TextProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def validate(self, data: Any) -> bool:
@@ -76,7 +76,7 @@ class TextProcessor(DataProcessor):
         return False
 
     def ingest(self, data: (str | list[str])) -> None:
-        if self.validate(data) == True:
+        if self.validate(data):
             if isinstance(data, (str)):
                 self._data.append(data)
             elif isinstance(data, list):
@@ -86,18 +86,18 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def _validate_log(self, log: Any) -> bool:
         if isinstance(log, dict):
             if (isinstance(list(log.keys())[0], str)
-                and isinstance(list(log.keys())[1], str)
-                and isinstance(list(log.values())[0], str)
-                and isinstance(list(log.values())[1], str)
-                and list(log.keys())[0] == "log_level"
-                and list(log.keys())[1] == "log_message"
-                and len(log) == 2):
+                    and isinstance(list(log.keys())[1], str)
+                    and isinstance(list(log.values())[0], str)
+                    and isinstance(list(log.values())[1], str)
+                    and list(log.keys())[0] == "log_level"
+                    and list(log.keys())[1] == "log_message"
+                    and len(log) == 2):
                 return True
         return False
 
@@ -111,41 +111,43 @@ class LogProcessor(DataProcessor):
             return True
         return False
 
-    def ingest(self, data: (dict[str:str] | list[dict[str:str]])) -> None:
-        if self.validate(data) == True:
+    def ingest(self, data: (dict[str, str] | list[dict[str, str]])) -> None:
+        if self.validate(data):
             if isinstance(data, dict):
-                self._data.append(f"{data["log_level"]}: {data["log_message"]}")
+                self._data.append(f"{data['log_level']}: "
+                                  f"{data['log_message']}")
             elif isinstance(data, list):
                 for item in data:
-                    self._data.append(f"{item["log_level"]}: {item["log_message"]}")
+                    self._data.append(f"{item['log_level']}: "
+                                      f"{item['log_message']}")
         else:
             raise DataProcessorError(" Got exception: Improper log data")
 
 
 class DataStream():
-    def __init__(self):
-        self.procs = []
+    def __init__(self) -> None:
+        self.procs: list[Any] = []
         super().__init__()
 
     def register_processor(self, proc: DataProcessor) -> None:
         if isinstance(proc, DataProcessor):
             self.procs.append(proc)
-        
+
     def process_stream(self, stream: list[Any]) -> None:
         for item in stream:
-            try: 
+            try:
                 valid = False
                 for proc in self.procs:
                     if proc.validate(item):
                         proc.ingest(item)
                         valid = True
-                if valid == False:
+                if not valid:
                     raise DataStreamError("DataStream error - "
                                           "Can't process element in stream: "
                                           f"{item}")
             except DataStreamError:
                 pass
-        
+
     def print_processors_stats(self) -> None:
         print("=== DataStream statistics ===")
         if len(self.procs) == 0:
@@ -155,8 +157,8 @@ class DataStream():
                 print(f"{proc.__class__.__name__}: "
                       f"total {len(proc._data) + proc._rank} items processed, "
                       f"remaining {len(proc._data)} on processor.")
-                
-    def consume_elements(self, type: str, qty: int):
+
+    def consume_elements(self, type: str, qty: int) -> None:
         for proc in self.procs:
             if type == "n" and isinstance(proc, NumericProcessor):
                 for _ in range(qty):
@@ -171,12 +173,12 @@ class DataStream():
 
 if __name__ == "__main__":
     data = [
-            'Hello world', 
+            'Hello world',
             [3.14, -1, 2.71],
             [{'log_level': 'WARNING',
-            'log_message': 'Telnet access! Use ssh instead'},
-            {'log_level': 'INFO',
-            'log_message': 'User wil isconnected'}],
+              'log_message': 'Telnet access! Use ssh instead'},
+             {'log_level': 'INFO',
+              'log_message': 'User wil isconnected'}],
             42,
             ['Hi', 'five']]
     print("=== Code Nexus - Data Stream ===")

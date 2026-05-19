@@ -9,9 +9,10 @@ class DataProcessorError(Exception):
     def __init__(self, msg: str = "Unknown DataProcessor error.") -> None:
         print(msg)
 
+
 class DataProcessor(ABC):
-    def __init__(self):
-        self._data = []
+    def __init__(self) -> None:
+        self._data: list[Any] = []
         self._rank = 0
         super().__init__()
 
@@ -30,8 +31,9 @@ class DataProcessor(ABC):
         else:
             return (-1, "")
 
+
 class NumericProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def validate(self, data: Any) -> bool:
@@ -43,9 +45,9 @@ class NumericProcessor(DataProcessor):
                     return False
             return True
         return False
-    
+
     def ingest(self, data: (int | float | list[(int | float)])) -> None:
-        if self.validate(data) == True:
+        if self.validate(data):
             if isinstance(data, (int, float)):
                 self._data.append(data)
             elif isinstance(data, list):
@@ -53,8 +55,9 @@ class NumericProcessor(DataProcessor):
         else:
             raise DataProcessorError(" Got exception: Improper numeric data")
 
+
 class TextProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def validate(self, data: Any) -> bool:
@@ -68,7 +71,7 @@ class TextProcessor(DataProcessor):
         return False
 
     def ingest(self, data: (str | list[str])) -> None:
-        if self.validate(data) == True:
+        if self.validate(data):
             if isinstance(data, (str)):
                 self._data.append(data)
             elif isinstance(data, list):
@@ -78,18 +81,18 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def _validate_log(self, log: Any) -> bool:
         if isinstance(log, dict):
             if (isinstance(list(log.keys())[0], str)
-                and isinstance(list(log.keys())[1], str)
-                and isinstance(list(log.values())[0], str)
-                and isinstance(list(log.values())[1], str)
-                and list(log.keys())[0] == "log_level"
-                and list(log.keys())[1] == "log_message"
-                and len(log) == 2):
+                    and isinstance(list(log.keys())[1], str)
+                    and isinstance(list(log.values())[0], str)
+                    and isinstance(list(log.values())[1], str)
+                    and list(log.keys())[0] == "log_level"
+                    and list(log.keys())[1] == "log_message"
+                    and len(log) == 2):
                 return True
         return False
 
@@ -103,21 +106,23 @@ class LogProcessor(DataProcessor):
             return True
         return False
 
-    def ingest(self, data: (dict[str:str] | list[dict[str:str]])) -> None:
-        if self.validate(data) == True:
+    def ingest(self, data: (dict[str, str] | list[dict[str, str]])) -> None:
+        if self.validate(data):
             if isinstance(data, dict):
-                self._data.append(f"{data["log_level"]}: {data["log_message"]}")
+                self._data.append(f"{data['log_level']}: "
+                                  f"{data['log_message']}")
             elif isinstance(data, list):
                 for item in data:
-                    self._data.append(f"{item["log_level"]}: {item["log_message"]}")
+                    self._data.append(f"{item['log_level']}: "
+                                      f"{item['log_message']}")
         else:
             raise DataProcessorError(" Got exception: Improper log data")
 
 
-def data_test(type: str, output_qty: int = 0):
+def data_test(type: str, output_qty: int = 0) -> None:
     if type == "numeric":
-        dp = NumericProcessor()
-        new_data = [1, 2, 3, 4, 5]
+        dp: DataProcessor = NumericProcessor()
+        new_data: list[Any] = [1, 2, 3, 4, 5]
         output_text = "Numeric value"
     elif type == "text":
         dp = TextProcessor()
@@ -125,10 +130,10 @@ def data_test(type: str, output_qty: int = 0):
         output_text = "Text value"
     elif type == "log":
         dp = LogProcessor()
-        new_data =  [{'log_level': 'NOTICE', 
-                      'log_message': 'Connection to server'},
-                     {'log_level': 'ERROR', 
-                      'log_message': 'Unauthorized access!!'}]
+        new_data = [{'log_level': 'NOTICE',
+                     'log_message': 'Connection to server'},
+                    {'log_level': 'ERROR',
+                     'log_message': 'Unauthorized access!!'}]
         output_text = "Log entry"
     else:
         raise DataProcessorError("Testing Unknown DataProcessor Type")

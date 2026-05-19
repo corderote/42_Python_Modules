@@ -14,15 +14,35 @@ class DataStreamError(Exception):
     def __init__(self, msg: str = "Unknown DataStream error.") -> None:
         print(msg)
 
-# TODO
+
 class ExportPlugin(Protocol):
     def process_output(self, data: list[tuple[int, str]]) -> None:
         pass
 
 
+class CSVPlugin:
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        print("CSV Output:")
+        for index in range(len(data)):
+            print(data[index][1], end="")
+            if index < len(data) - 1:
+                print(",", end="")
+            else:
+                print()
+
+
+class JSONPlugin:
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        print("JSON Output:")
+        json_dict = {}
+        for item in data:
+            json_dict[f"item_{item[0]}"] = item[1]
+        print(json_dict)
+
+
 class DataProcessor(ABC):
-    def __init__(self):
-        self._data = []
+    def __init__(self) -> None:
+        self._data: list[Any] = []
         self._rank = 0
         super().__init__()
 
@@ -43,7 +63,7 @@ class DataProcessor(ABC):
 
 
 class NumericProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def validate(self, data: Any) -> bool:
@@ -55,9 +75,9 @@ class NumericProcessor(DataProcessor):
                     return False
             return True
         return False
-    
+
     def ingest(self, data: (int | float | list[(int | float)])) -> None:
-        if self.validate(data) == True:
+        if self.validate(data):
             if isinstance(data, (int, float)):
                 self._data.append(data)
             elif isinstance(data, list):
@@ -67,7 +87,7 @@ class NumericProcessor(DataProcessor):
 
 
 class TextProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def validate(self, data: Any) -> bool:
@@ -81,7 +101,7 @@ class TextProcessor(DataProcessor):
         return False
 
     def ingest(self, data: (str | list[str])) -> None:
-        if self.validate(data) == True:
+        if self.validate(data):
             if isinstance(data, (str)):
                 self._data.append(data)
             elif isinstance(data, list):
@@ -91,18 +111,18 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def _validate_log(self, log: Any) -> bool:
         if isinstance(log, dict):
             if (isinstance(list(log.keys())[0], str)
-                and isinstance(list(log.keys())[1], str)
-                and isinstance(list(log.values())[0], str)
-                and isinstance(list(log.values())[1], str)
-                and list(log.keys())[0] == "log_level"
-                and list(log.keys())[1] == "log_message"
-                and len(log) == 2):
+                    and isinstance(list(log.keys())[1], str)
+                    and isinstance(list(log.values())[0], str)
+                    and isinstance(list(log.values())[1], str)
+                    and list(log.keys())[0] == "log_level"
+                    and list(log.keys())[1] == "log_message"
+                    and len(log) == 2):
                 return True
         return False
 
@@ -116,41 +136,43 @@ class LogProcessor(DataProcessor):
             return True
         return False
 
-    def ingest(self, data: (dict[str:str] | list[dict[str:str]])) -> None:
-        if self.validate(data) == True:
+    def ingest(self, data: (dict[str, str] | list[dict[str, str]])) -> None:
+        if self.validate(data):
             if isinstance(data, dict):
-                self._data.append(f"{data["log_level"]}: {data["log_message"]}")
+                self._data.append(f"{data['log_level']}: "
+                                  f"{data['log_message']}")
             elif isinstance(data, list):
                 for item in data:
-                    self._data.append(f"{item["log_level"]}: {item["log_message"]}")
+                    self._data.append(f"{item['log_level']}: "
+                                      f"{item['log_message']}")
         else:
             raise DataProcessorError(" Got exception: Improper log data")
 
 
 class DataStream():
-    def __init__(self):
-        self.procs = []
+    def __init__(self) -> None:
+        self.procs: list[Any] = []
         super().__init__()
 
     def register_processor(self, proc: DataProcessor) -> None:
         if isinstance(proc, DataProcessor):
             self.procs.append(proc)
-        
+
     def process_stream(self, stream: list[Any]) -> None:
         for item in stream:
-            try: 
+            try:
                 valid = False
                 for proc in self.procs:
                     if proc.validate(item):
                         proc.ingest(item)
                         valid = True
-                if valid == False:
+                if not valid:
                     raise DataStreamError("DataStream error - "
                                           "Can't process element in stream: "
                                           f"{item}")
             except DataStreamError:
                 pass
-        
+
     def print_processors_stats(self) -> None:
         print("=== DataStream statistics ===")
         if len(self.procs) == 0:
@@ -160,8 +182,8 @@ class DataStream():
                 print(f"{proc.__class__.__name__}: "
                       f"total {len(proc._data) + proc._rank} items processed, "
                       f"remaining {len(proc._data)} on processor.")
-                
-    def consume_elements(self, type: str, qty: int):
+
+    def consume_elements(self, type: str, qty: int) -> None:
         for proc in self.procs:
             if type == "n" and isinstance(proc, NumericProcessor):
                 for _ in range(qty):
@@ -173,19 +195,24 @@ class DataStream():
                 for _ in range(qty):
                     proc.output()
 
-    # TODO
     def output_pipeline(self, nb: int, plugin: ExportPlugin) -> None:
-        pass
+        for proc in self.procs:
+            item_lst = []
+            for _ in range(nb):
+                output = proc.output()
+                if output[0] != -1:
+                    item_lst.append(output)
+            plugin.process_output(item_lst)
 
 
 if __name__ == "__main__":
     data = [
-            'Hello world', 
+            'Hello world',
             [3.14, -1, 2.71],
             [{'log_level': 'WARNING',
-            'log_message': 'Telnet access! Use ssh instead'},
-            {'log_level': 'INFO',
-            'log_message': 'User wil isconnected'}],
+              'log_message': 'Telnet access! Use ssh instead'},
+             {'log_level': 'INFO',
+              'log_message': 'User wil isconnected'}],
             42,
             ['Hi', 'five']]
     print("=== Code Nexus - Data Pipeline ===")
@@ -200,23 +227,21 @@ if __name__ == "__main__":
     print(f"Send first batch of data on stream: {data}\n")
     ds.process_stream(data)
     ds.print_processors_stats()
-    
-    # TODO
-    print("Send 3 processed data from each processor to a CSV plugin:")
-    ds.output_pipeline(3, )
-
-    print(f"Send another batch of data on stream: {data}\n")
+    print("\nSend 3 processed data from each processor to a CSV plugin:")
+    ds.output_pipeline(3, CSVPlugin())
+    print()
+    ds.print_processors_stats()
+    print(f"\nSend another batch of data on stream: {data}\n")
     data = [21, ['I love AI', 'LLMs are wonderful', 'Stay healthy'],
-           [{'log_level': 'ERROR', 
-             'log_message': '500 server crash'}, 
-            {'log_level': 'NOTICE',
-             'log_message': 'Certificate expires in 10 days'}],
-           [32, 42, 64, 84, 128, 168], 'World hello']
+            [{'log_level': 'ERROR',
+              'log_message': '500 server crash'},
+             {'log_level': 'NOTICE',
+              'log_message': 'Certificate expires in 10 days'}],
+            [32, 42, 64, 84, 128, 168], 'World hello']
     ds.process_stream(data)
     ds.print_processors_stats()
-
-    # TODO
-    print("Send 5 processed data from each processor to a JSON plugin:")
-    
-
+    print("\nSend 5 processed data from each processor to a JSON plugin:")
+    ds.output_pipeline(5, JSONPlugin())
+    print()
     ds.print_processors_stats()
+    print()
