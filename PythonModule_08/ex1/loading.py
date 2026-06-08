@@ -7,17 +7,17 @@ import sys
 print("\nLOADING STATUS: Loading Programs...\n")
 print("Checking dependencies: ")
 try:
-    import pandas as pd
+    import pandas as pd  # type: ignore
     print(f"[OK] {pd.__name__} {pd.__version__}"
           " - Data manipulation ready.")
     import numpy as np
     print(f"[OK] {np.__name__} {np.__version__}"
           " -  Numerical computation ready.")
-    import requests
+    import requests  # type: ignore
     print(f"[OK] {requests.__name__} {requests.__version__}"
           " - Network access ready.")
-    import matplotlib as mlt
-    import matplotlib.pyplot as plt
+    import matplotlib as mlt  # type: ignore
+    import matplotlib.pyplot as plt  # type: ignore
     print(f"[OK] {mlt.__name__} {mlt.__version__}"
           " - Visualization ready.")
 except ModuleNotFoundError as err_msg:
@@ -65,13 +65,9 @@ stats_cols = [
 print("[#3] - Calculate statistics using numpy: ...")
 
 avg = np.mean(df[stats_cols], axis=0)
-min_val = np.min(df[stats_cols], axis=0)
-max_val = np.max(df[stats_cols], axis=0)
 
 summary = pd.DataFrame({
     "average": avg,
-    "minimum": min_val,
-    "maximum": max_val
 }, index=stats_cols)
 
 print("[#4] - Generating visualization using matplotlib: ...")
@@ -81,8 +77,6 @@ x = np.arange(len(stats_cols))
 plt.figure(figsize=(10, 6))
 
 plt.plot(x, summary["average"], marker="o", label="Average")
-plt.plot(x, summary["minimum"], marker="o", label="Minimum")
-plt.plot(x, summary["maximum"], marker="o", label="Maximum")
 
 plt.xticks(x, stats_cols)
 plt.ylabel("Stat Value")
