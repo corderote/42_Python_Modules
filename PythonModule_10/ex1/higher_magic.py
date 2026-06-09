@@ -43,10 +43,12 @@ def conditional_caster(condition: Callable[[str, int], bool],
 
 
 def spell_sequence(spells: list[Callable[[str, int], str]]
-                   ) -> Callable[[str, int], None]:
-    def multi_spell(target: str, power: int) -> None:
+                   ) -> Callable[[str, int], list[str]]:
+    def multi_spell(target: str, power: int) -> list[str]:
+        sequence: list[str] = []
         for spell in spells:
-            print(spell(target, power))
+            sequence.append(spell(target, power))
+        return sequence
     return multi_spell
 
 
@@ -81,6 +83,8 @@ if __name__ == "__main__":
     ]
     multispell = spell_sequence(spell_lst)
     print("Casting multispell:")
-    multispell(values[0], values[1])
+    multi_spell = multispell(values[0], values[1])
+    for spell in multi_spell:
+        print(spell)
 
     print("\nAll tests completed.\n")

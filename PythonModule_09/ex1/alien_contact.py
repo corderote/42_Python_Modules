@@ -99,7 +99,7 @@ def main() -> None:
         )
     except ValidationError as err:
         for error in err.errors():
-            print(f"{error['msg']}\n")
+            print(f"{error['msg'].replace('Value error, ',  '')}\n")
 
 
 if __name__ == "__main__":

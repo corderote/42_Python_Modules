@@ -36,8 +36,7 @@ def retry_spell(max_attempts: int) -> Callable[..., Callable[..., str]]:
             for attempt in range(1, max_attempts + 1):
                 try:
                     return func(*args, **kwargs)
-                except Exception as err_msg:
-                    print(err_msg)
+                except ValueError:
                     if attempt < max_attempts:
                         print("Spell failed, retrying... "
                               f"(attempt {attempt}/{max_attempts})")

@@ -8,7 +8,7 @@ def artifact_sorter(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def power_filter(mages: list[dict[str, Any]],
                  min_power: int) -> list[dict[str, Any]]:
-    return list(filter(lambda mage: mage["power"] > min_power, mages))
+    return list(filter(lambda mage: mage["power"] >= min_power, mages))
 
 
 def spell_transformer(spells: list[str]) -> list[str]:
@@ -16,12 +16,10 @@ def spell_transformer(spells: list[str]) -> list[str]:
 
 
 def mage_stats(mages: list[dict[str, Any]]) -> dict[str, Any]:
-    powers: list[int] = list(map(lambda mage: mage['power'], mages))
-    return {
-        'max_power': max(powers),
-        'min_power': min(powers),
-        'avg_power': round(sum(powers) / len(powers), 2)
-    }
+    return {"max_power": max(mages, key=lambda mage: mage["power"])["power"],
+            "min_power": min(mages, key=lambda mage: mage["power"])["power"],
+            "avg_power": round(sum(map(lambda mage:
+                                       mage["power"], mages)) / len(mages), 2)}
 
 
 if __name__ == "__main__":
@@ -41,15 +39,15 @@ if __name__ == "__main__":
     spells: list[str] = ['blizzard', 'freeze', 'flash', 'darkness']
 
     print("\nTesting artifact sorter: ...")
-    sorted_atifacts: list[dict[str, Any]] = artifact_sorter(artifacts)
-    for idx in range(len(sorted_atifacts)):
-        print(f"[#{idx}] {sorted_atifacts[idx]['name']} with power: "
-              f"{sorted_atifacts[idx]['power']}")
+    sorted_artifacts: list[dict[str, Any]] = artifact_sorter(artifacts)
+    for idx in range(len(sorted_artifacts)):
+        print(f"[#{idx}] {sorted_artifacts[idx]['name']} with power: "
+              f"{sorted_artifacts[idx]['power']}")
 
     print("\nTesting power filter: ...")
     min_power: int = random.randint(60, 90)
     mages_filter: list[dict[str, Any]] = power_filter(mages, min_power)
-    print(f"Revealing mages with power greater than {min_power}:")
+    print(f"Revealing mages with power greater or equal than {min_power}:")
     for mage in mages_filter:
         print(f"- {mage['name']} with power {mage['power']}")
 

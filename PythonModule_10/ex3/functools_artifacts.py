@@ -47,7 +47,7 @@ def spell_dispatcher() -> Callable[[Any], str]:
 
     @dispatch.register(str)
     def d_str(value: str) -> str:
-        return f"Casting {value} enchanment"
+        return f"Casting {value} enchantment"
 
     @dispatch.register(list)
     def d_lst(value: list[str | int]) -> str:

@@ -2,13 +2,13 @@ import random
 from typing import Callable, Any
 
 
-def mage_counter() -> Callable[[], None]:
+def mage_counter() -> Callable[[], int]:
     counter = 0
 
-    def count() -> None:
+    def count() -> int:
         nonlocal counter
         counter += 1
-        print(counter)
+        return counter
 
     return count
 
@@ -43,20 +43,15 @@ def memory_vault() -> dict[str, Callable[..., Any]]:
 
 
 if __name__ == "__main__":
-    initial_powers = [80, 69, 64]
-    power_additions = [11, 18, 19, 6, 16]
     enchantment_types = ['Shocking', 'Radiant', 'Dark']
     items_to_enchant = ['Cloak', 'Amulet', 'Wand', 'Ring']
 
     print("\nTesting mage counter: ...")
     count_spell_1 = mage_counter()
     count_spell_2 = mage_counter()
-    print("Mage Counter A [1]: ", end="")
-    count_spell_1()
-    print("Mage Counter A [2]: ", end="")
-    count_spell_1()
-    print("Mage Counter B: ", end="")
-    count_spell_2()
+    print(f"Mage Counter A [1]: {count_spell_1()}")
+    print(f"Mage Counter A [2]: {count_spell_1()}")
+    print(f"Mage Counter B: {count_spell_2()}")
 
     print("\nTesting spell accumulator: ...")
     base_value = 100
